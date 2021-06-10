@@ -3,17 +3,24 @@ resource_group: sWrayAnsibleDev
 location: australiaeast
 charge_to: labwellington
 owner: swray
-virtual_network: sWrayAnsibleDev_vNet
+vpc_security_group_source: 202.180.82.192/32
+virtual_network: AnsibleDev_vNet
 virtual_network_prefix: 10.0.0.0/16
-vpc_subnet: sWrayAnsibleDev_subnet
+
+vpc_subnet: AnsibleDev_subnet
 vpc_subnet_prefix: 10.0.1.0/24
+
+bastion: sWrayBastion
 bastion_subnet: AzureBastionSubnet
 bastion_subnet_prefix: 10.0.2.0/24
-vpc_public_ip: sWrayAnsibleDev_pip
-bastion_public_ip: sWrayAnsibleDev_Bastion
-vpc_security_group: sWrayAnsibleDevSG
-vpc_security_group_source: 202.180.82.192/32
-vm_networkinterface: sWrayAnsibleDevNIC
-vm: sWrayDevVM
-bastion: sWrayBastion
+bastion_public_ip: AnsibleDev_Bastion
 
+win_vm_01: WinVM01
+win01_security_group: WinVM01_SG01
+win01_public_ip: WinVM01_PIP01
+win01_networkinterface: WinVM01_NIC01
+
+centos01_vm_01: CentOSVM01
+centos01_public_ip_01: CentOSVM01_PIP01
+centos01_security_group: CentOSVM01_SG01
+centos01_nic_01: CentOSVM01_NIC01

@@ -1,0 +1,30 @@
+---
+- name: "Create Resource Group: {{resource_group}}"
+  azure_rm_resourcegroup:
+    name: "{{resource_group}}"
+    location: "{{location}}"
+    tags:
+      Name: "{{resource_group}}"
+      ChargeTo: "{{charge_to}}"
+      Owner: "{{owner}}"
+      AutoStop: "2"
+      AutoStart: "0"
+
+- name: "Create virtual network for {{resource_group}}"
+  azure_rm_virtualnetwork:
+    resource_group: "{{resource_group}}"
+    name: "{{virtual_network}}"
+    address_prefixes: "{{virtual_network_prefix}}"
+    tags:
+      Name: "{{resource_group}}"
+      ChargeTo: "{{charge_to}}"
+      Owner: "{{owner}}"
+      AutoStop: "2"
+      AutoStart: "0"
+
+- name: "Add subnet for {{resource_group}}"
+  azure_rm_subnet:
+    resource_group: "{{resource_group}}"
+    name: "{{vpc_subnet}}"
+    address_prefix: "{{vpc_subnet_prefix}}"
+    virtual_network: "{{virtual_network}}"

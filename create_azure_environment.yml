@@ -10,19 +10,35 @@
       include_vars: inventory/vars/azure_environment.yml
       tags:
       - always
-
-    - name: Create a VM
+      
+    - name: Create Azure Network
+      import_role:
+        name: azure_network
+      tags:
+      - always
+      
+    - name: Create a CentOS VM
       import_role:
         name: azure_vm
-      tags: create
+      tags:
+      - createcentosvm
+      
+    - name: Create a bastion
+      import_role:
+        name: azure_bastion
+      tags:
+      - createbastion
 
     - name: Create a Windows VM
       import_role:
         name: azure_winvm
-      tags: createwinvm
+      tags:
+      - createwinvm
 
     - name: Destroy a VM
       import_role:
         name: destroy_vm
-      tags: destroy
+      tags:
+      - never
+      - destroy
       

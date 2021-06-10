@@ -1,67 +1,9 @@
 ---
-- name: Create resource group
-  azure_rm_resourcegroup:
-    name: "{{resource_group}}"
-    location: "{{location}}"
-    tags:
-      Name: "{{resource_group}}"
-      ChargeTo: "{{charge_to}}"
-      Owner: "{{owner}}"
-      AutoStop: "2"
-      AutoStart: "0"
-
-- name: Create virtual network
-  azure_rm_virtualnetwork:
-    resource_group: "{{resource_group}}"
-    name: "{{virtual_network}}"
-    address_prefixes: "{{virtual_network_prefix}}"
-    tags:
-      Name: "{{resource_group}}"
-      ChargeTo: "{{charge_to}}"
-      Owner: "{{owner}}"
-      AutoStop: "2"
-      AutoStart: "0"
-
-- name: Add subnet (VM)
-  azure_rm_subnet:
-    resource_group: "{{resource_group}}"
-    name: "{{vpc_subnet}}"
-    address_prefix: "10.0.1.0/24"
-    virtual_network: "{{virtual_network}}"
-
-- name: Add subnet (Bastion)
-  azure_rm_subnet:
-    resource_group: "{{resource_group}}"
-    name: "{{bastion_subnet}}"
-    address_prefix: "10.0.2.0/24"
-    virtual_network: "{{virtual_network}}"
-
-- name: Get facts about bastion subnet
-  azure_rm_subnet_info:
-    resource_group: "{{resource_group}}"
-    virtual_network_name: "{{virtual_network}}"
-    name: "{{bastion_subnet}}"
-  register: "azure_bastion_subnet"
-
-
-#- name: Show azure_bastion_subnet
-#  debug:
-#    msg: "{{azure_bastion_subnet}}"
-    
-- name: Set the bastion subnet ID using the fact we just grabbed
-  set_fact:
-    bastion_subnet_id: "{{azure_bastion_subnet.subnets[0].id}}"
-
-#- name: Show bastion subnet ID
-#  debug:
-#    msg: "{{bastion_subnet_id}}"
-
-    
-- name: Create public IP address (VM)
+- name: "Create public IP address for {{win_vm_01}}"
   azure_rm_publicipaddress:
     resource_group: "{{resource_group}}"
     allocation_method: Static
-    name: "{{vpc_public_ip}}"
+    name: "{{win01_public_ip}}"
     tags:
       Name: "{{resource_group}}"
       ChargeTo: "{{charge_to}}"
@@ -70,50 +12,14 @@
       AutoStart: "0"
   register: output_ip_address
 
-- name: Create public IP address (Bastion)
-  azure_rm_publicipaddress:
-    resource_group: "{{resource_group}}"
-    name: "{{bastion_public_ip}}"
-    sku: Standard
-    allocation_method: Static
-    tags:
-      Name: "{{resource_group}}"
-      ChargeTo: "{{charge_to}}"
-      Owner: "{{owner}}"
-      AutoStop: "2"
-      AutoStart: "0"
-  register: bastion_ip_address
-
-- name: Get facts about bastion public IP
-  azure_rm_publicipaddress_info:
-    resource_group: "{{resource_group}}"
-    name: "{{bastion_public_ip}}"
-  register: "azure_bastion_publicip"
-
-- name: Set the bastion publicipaddress ID using the fact we just grabbed
-  set_fact:
-    bastion_publicipaddress_id: "{{azure_bastion_publicip.publicipaddresses[0].id}}"
-
-#- name: Show azure_bastion_publicip
-#  debug:
-#    msg: "{{azure_bastion_publicip}}"
-
-#- name: Show bastion publicipaddress ID
-#  debug:
-#    msg: "{{bastion_publicipaddress_id}}"
-
-- name: Output public IP
+- name: "Output public IP for {{win_vm_01}}"
   debug:
     msg: "The public IP is {{ output_ip_address.state.ip_address }}"
 
-- name: Output bastion IP
-  debug:
-    msg: "The public IP is {{ bastion_ip_address.state.ip_address }}"
-
-- name: Create Network Security Group
+- name: "Create Network Security Group for {{win_vm_01}}"
   azure_rm_securitygroup:
     resource_group: "{{resource_group}}"
-    name: "{{vpc_security_group}}"
+    name: "{{win01_security_group}}"
     rules:
       - name: 'allow_rdp'
         protocol: Tcp
@@ -146,16 +52,16 @@
       AutoStop: "2"
       AutoStart: "0"
 
-- name: Create a network interface
+- name: "Create a network interface for {{win_vm_01}}"
   azure_rm_networkinterface:
-    name: "{{vm_networkinterface}}"
+    name: "{{win01_networkinterface}}"
     resource_group: "{{resource_group}}"
     virtual_network: "{{virtual_network}}"
     subnet_name: "{{vpc_subnet}}"
-    security_group: "{{vpc_security_group}}"
+    security_group: "{{win01_security_group}}"
     ip_configurations:
       - name: default
-        public_ip_address_name: "{{vpc_public_ip}}"
+        public_ip_address_name: "{{win01_public_ip}}"
         primary: True
     tags:
       Name: "{{resource_group}}"
@@ -164,14 +70,14 @@
       AutoStop: "2"
       AutoStart: "0"
 
-- name: Create VM
+- name: "Create VM: {{win_vm_01}}"
   azure_rm_virtualmachine:
     resource_group: "{{resource_group}}"
-    name: "{{vm}}"
+    name: "{{win_vm_01}}"
     vm_size: Standard_DS1_v2
     admin_username: azureuser
     admin_password: "{{ password }}"
-    network_interfaces: "{{vm_networkinterface}}"
+    network_interfaces: "{{win01_networkinterface}}"
     os_type: Windows
     image:
       offer: WindowsServer
@@ -186,38 +92,21 @@
       AutoStart: "0"
   no_log: false
 
-- name: Create bastion
-  azure_rm_resource:
-    resource_name: "{{bastion}}"
-    resource_group: "{{resource_group}}"
-    provider: network
-    resource_type: bastionHosts
-    body:
-      location: "{{location}}"
-      properties:
-        ipconfigurations:
-          - name: IpConf
-            properties:
-              subnet:
-                id: "{{ bastion_subnet_id }}"
-              publicipaddress:
-                id: "{{ bastion_publicipaddress_id }}"
-  
-- name: Create VM script extension to enable HTTPS WinRM listener
+- name: "Create VM script extension to enable HTTPS WinRM listener for {{win_vm_01}}"
   azure_rm_virtualmachineextension:
     name: winrm-extension
     resource_group: "{{resource_group}}"
-    virtual_machine_name: "{{vm}}"
+    virtual_machine_name: "{{win_vm_01}}"
     publisher: Microsoft.Compute
     virtual_machine_extension_type: CustomScriptExtension
     type_handler_version: '1.9'
     settings: '{"fileUris": ["https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"],"commandToExecute": "powershell -ExecutionPolicy Unrestricted -File ConfigureRemotingForAnsible.ps1"}'
     auto_upgrade_minor_version: true
 
-- name: Get facts for one Public IP
+- name: "Get facts for one Public IP for {{win_vm_01}}"
   azure_rm_publicipaddress_info:
     resource_group: "{{resource_group}}"
-    name: "{{vpc_public_ip}}"
+    name: "{{win01_public_ip}}"
   register: publicipaddresses
 
 - name: set public ip address fact

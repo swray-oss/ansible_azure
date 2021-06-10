@@ -1,7 +1,7 @@
 ---
-- name: Deleting resource group - "{{ name }}"
+- name: Deleting resource group - "{{ resource_group }}"
   azure_rm_resourcegroup:
-    name: "{{ name }}"
+    name: "{{ resource_group }}"
     state: absent
     force_delete_nonempty: true
   register: rg
