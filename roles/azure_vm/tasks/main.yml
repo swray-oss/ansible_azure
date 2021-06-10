@@ -1,0 +1,99 @@
+---
+- name: Create Resource Group
+  azure_rm_resourcegroup:
+    name: SwrayAnsibleDev
+    location: australiaeast
+    tags:
+      Name: SwrayAnsibleDev
+      ChargeTo: labwellington
+      Owner: swray
+      AutoStop: "2"
+      AutoStart: "0"
+
+- name: Create virtual network
+  azure_rm_virtualnetwork:
+    resource_group: SwrayAnsibleDev
+    name: sWrayAnsibleDevNet01
+    address_prefixes: "10.3.0.0/16"
+    tags:
+      Name: SwrayAnsibleDev
+      ChargeTo: labwellington
+      Owner: swray
+      AutoStop: "2"
+      AutoStart: "0"
+
+- name: Add subnet
+  azure_rm_subnet:
+    resource_group: SwrayAnsibleDev
+    name: sWrayAnsibleDevSubnet01
+    address_prefix: "10.3.1.0/24"
+    virtual_network: sWrayAnsibleDevNet01
+
+- name: Create public IP address
+  azure_rm_publicipaddress:
+    resource_group: SwrayAnsibleDev
+    allocation_method: Static
+    name: sWrayAnsibleDevPublicIP
+    tags:
+      Name: SwrayAnsibleDev
+      ChargeTo: labwellington
+      Owner: swray
+      AutoStop: "2"
+      AutoStart: "0"
+
+- name: Create Network Security Group that allows SSH
+  azure_rm_securitygroup:
+    resource_group: SwrayAnsibleDev
+    name: sWrayAnsibleDevNetworkSecurityGroup01
+    rules:
+      - name: SSH
+        protocol: Tcp
+        destination_port_range: 22
+        access: Allow
+        priority: 1001
+        direction: Inbound
+    tags:
+      Name: SwrayAnsibleDev
+      ChargeTo: labwellington
+      Owner: swray
+      AutoStop: "2"
+      AutoStart: "0"
+        
+- name: Create virtual network interface card
+  azure_rm_networkinterface:
+    resource_group: SwrayAnsibleDev
+    name: sWrayAnsibleDevNIC01
+    virtual_network: sWrayAnsibleDevNet01
+    subnet: sWrayAnsibleDevSubnet01
+    public_ip_name: sWrayAnsibleDevPublicIP
+    security_group: sWrayAnsibleDevNetworkSecurityGroup01
+    tags:
+      Name: SwrayAnsibleDev
+      ChargeTo: labwellington
+      Owner: swray
+      AutoStop: "2"
+      AutoStart: "0"
+
+- name: Create VM
+  azure_rm_virtualmachine:
+    resource_group: SwrayAnsibleDev
+    name: sWrayAnsibleDevVM01
+    vm_size: Standard_DS1_v2
+    admin_username: azureuser
+    ssh_password_enabled: false
+    ssh_public_keys:
+      - path: /home/azureuser/.ssh/authorized_keys
+        key_data: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDsaoHFa+AavlrT3S8urrllkE0lvo3X/cUo29e34HdK9j7X6Tzxf8oC6O1DMFOUXeto1PDuPquBFbJDY8lPv1HV9GW5x0qj1uijMxo9g46He4i32jhk9iGtQEtnyGUZTbzCeF6DS0FH+I5PKymIkVE4V86PLp7izRF2t8t0dSh5WZQpwU2tAsVH/PvkL7IXCdiFwk3iUsljEpRayDu4fs9dZGLaAaszNa7kQ2/EvBOi+GOEV95Cd1BtABcbct2aDnhbv3xI79xOkjmEDGLXFAlCAOWsaH/siNY7mF7QJBdel3dASWJe5LS9Igfe9jE8AwfKe9y7fzZPu4ppe5EmWXFV1sCeq0MKBTDLTwl1Ks/mjooRVKACE1IcjMdnjt84ibqtSqVWCdDahegB1Muw1p9wd5ZsRIMqn8vmMHwVGrQsYV/USfzg/w0e7Mg3nzX4gonqsjH7M52+nVgio8jcVwwAaiFg6M973C4VprDH56WZ1+EZIjf2jpijIBl8IKoUhbU= swray@ubuntu"
+    network_interfaces: sWrayAnsibleDevNIC01
+    image:
+      offer: CentOS
+      publisher: OpenLogic
+      sku: '7.5'
+      version: latest
+    tags:
+      Name: SwrayAnsibleDev
+      ChargeTo: labwellington
+      Owner: swray
+      AutoStop: "2"
+      AutoStart: "0"
+

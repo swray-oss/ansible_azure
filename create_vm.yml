@@ -1,0 +1,28 @@
+---
+- name: Create Azure Environment
+  hosts: localhost
+  connection: local
+  vars_prompt:
+    - name: password
+      prompt: "Enter local administrator password"
+  tasks:
+    - name: IncludeVars
+      include_vars: inventory/vars/azure_environment.yml
+      tags:
+      - always
+
+    - name: Create a VM
+      import_role:
+        name: azure_vm
+      tags: create
+
+    - name: Create a Windows VM
+      import_role:
+        name: azure_winvm
+      tags: createwinvm
+
+    - name: Destroy a VM
+      import_role:
+        name: destroy_vm
+      tags: destroy
+      
