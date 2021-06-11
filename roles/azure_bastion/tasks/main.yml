@@ -13,17 +13,18 @@
     name: "{{bastion_subnet}}"
   register: "azure_bastion_subnet"
 
-- name: "Show azure_bastion_subnet for {{bastion}}"
-  debug:
-    msg: "{{azure_bastion_subnet}}"
+#- name: "Show azure_bastion_subnet for {{bastion}}"
+#  debug:
+#    msg: "{{azure_bastion_subnet}}"
     
 - name: "Set the bastion subnet ID for {{bastion}} using the fact we just grabbed"
   set_fact:
     bastion_subnet_id: "{{azure_bastion_subnet.subnets[0].id}}"
 
-- name: "Show bastion subnet ID for {{bastion}}"
-  debug:
-    msg: "{{bastion_subnet_id}}"
+#- name: "Show bastion subnet ID for {{bastion}}"
+#  debug:
+#    msg: "{{bastion_subnet_id}}"
+    
 - name: "Create public IP address for bastion: {{bastion}}"
   azure_rm_publicipaddress:
     resource_group: "{{resource_group}}"
@@ -48,16 +49,18 @@
   set_fact:
     bastion_publicipaddress_id: "{{azure_bastion_publicip.publicipaddresses[0].id}}"
 
-- name: "Show azure_bastion_publicip for {{bastion}}"
-  debug:
-    msg: "{{azure_bastion_publicip}}"
+#- name: "Show azure_bastion_publicip for {{bastion}}"
+#  debug:
+#    msg: "{{azure_bastion_publicip}}"
 
-- name: "Show publicipaddress ID for bastion: {{bastion}}"
-  debug:
-    msg: "{{bastion_publicipaddress_id}}"
+#- name: "Show publicipaddress ID for bastion: {{bastion}}"
+#  debug:
+#    msg: "{{bastion_publicipaddress_id}}"
+    
 - name: "Output IP for bastion: {{bastion}}"
   debug:
     msg: "The public IP is {{ bastion_ip_address.state.ip_address }}"
+    
 - name: "Create bastion: {{bastion}}"
   azure_rm_resource:
     resource_name: "{{bastion}}"
