@@ -15,7 +15,9 @@
       import_role:
         name: azure_network
       tags:
-      - always
+      - createcentosvm
+      - createwinvm
+      - createbastion
       
     - name: Create a CentOS VM
       import_role:
